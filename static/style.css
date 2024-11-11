@@ -1,0 +1,39 @@
+.block {
+    border: 1px solid #ccc;
+    padding: 10px;
+    margin: 10px 0;
+    background-color: #f9f9f9;
+    border-radius: 5px;
+}
+
+.block:hover {
+    background-color: #e9e9e9;
+}
+
+.transaction-button {
+    display: block;
+    margin-top: 5px;
+    padding: 5px;
+    background-color: #3498db;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.transaction-button:hover {
+    background-color: #2980b9;
+}
+
+.transaction-details {
+    display: none;
+    margin-top: 10px;
+    background-color: #f2f2f2;
+    padding: 10px;
+    border-radius: 5px;
+}
+
+.scrollable {
+    max-height: 400px;
+    overflow-y: auto;
+}

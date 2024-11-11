@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thallium Blockchain GUI</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>Thallium  Blockchain</h1>
+        <div class="info">
+            <p><strong>Current Block Index:</strong> <span id="block_index">Loading...</span></p>
+            <p><strong>Uptime:</strong> <span id="uptime">Loading...</span> seconds</p>
+            <p><strong>Server IP:</strong> <span id="ip">Loading...</span></p>
+        </div>
+        
+        <button id="generate_wallet_btn">Generate Wallet Address</button>
+        
+        <div id="wallet_address">
+            <strong>Wallet Address:</strong>
+            <span id="address">Not generated</span>
+        </div>
+
+        <!-- New Section for API Commands -->
+        <div class="api-commands">
+            <h2>API Commands</h2>
+            <p><strong>1. Mine New Block</strong><br>
+                <em>Endpoint:</em> <code>/mine</code><br>
+                This will mine a new block and add all pending transactions to the blockchain.
+            </p>
+            <p><strong>2. Create a New Transaction</strong><br>
+                <em>Endpoint:</em> <code>/transactions/new</code><br>
+                <em>Required JSON:</em>
+                <pre>
+{
+    "sender": "address_from",
+    "recipient": "address_to",
+    "amount": 100,
+    "transaction_type": "transfer"
+}
+                </pre>
+                This will create a new transaction. Specify the sender, recipient, amount, and transaction type (e.g., "transfer").
+            </p>
+            <p><strong>3. Check Balance</strong><br>
+                <em>Endpoint:</em> <code>/balance/&lt;address&gt;</code><br>
+                This will return the balance of the specified address.
+            </p>
+            <p><strong>4. Burn Tokens</strong><br>
+                <em>Endpoint:</em> <code>/burn</code><br>
+                <em>Required JSON:</em>
+                <pre>
+{
+    "sender": "address_from",
+    "amount": 100
+}
+                </pre>
+                This will burn a specified amount of tokens from the sender's balance.
+            </p>
+            <p><strong>5. Mint New Tokens</strong><br>
+                <em>Endpoint:</em> <code>/mint</code><br>
+                <em>Required JSON:</em>
+                <pre>
+{
+    "recipient": "address_to",
+    "amount": 100
+}
+                </pre>
+                This will mint new tokens and send them to the specified recipient.
+            </p>
+        </div>
+    </div>
+
+    <script>
+        $(document).ready(function() {
+            // Fetch blockchain info
+            function updateBlockchainInfo() {
+                $.get('/block_info', function(data) {
+                    $('#block_index').text(data.block_index);
+                    $('#uptime').text(data.uptime);
+                    $('#ip').text(data.ip);
+                });
+            }
+
+            // Generate wallet address
+            $('#generate_wallet_btn').click(function() {
+                $.get('/generate_wallet', function(data) {
+                    $('#address').text(data.address);
+                });
+            });
+
+            // Initial fetch for blockchain info
+            updateBlockchainInfo();
+            
+            // Optionally, set an interval to update info (every 5 seconds)
+            setInterval(updateBlockchainInfo, 5000);
+        });
+    </script>
+</body>
+</html>
