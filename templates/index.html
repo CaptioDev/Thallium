@@ -9,7 +9,7 @@
 </head>
 <body>
     <div class="container">
-        <h1>Thallium  Blockchain</h1>
+        <h1>Thallium Blockchain</h1>
         <div class="info">
             <p><strong>Current Block Index:</strong> <span id="block_index">Loading...</span></p>
             <p><strong>Uptime:</strong> <span id="uptime">Loading...</span> seconds</p>
@@ -23,52 +23,69 @@
             <span id="address">Not generated</span>
         </div>
 
-        <!-- New Section for API Commands -->
+        <!-- API Commands Section -->
         <div class="api-commands">
             <h2>API Commands</h2>
-            <p><strong>1. Mine New Block</strong><br>
-                <em>Endpoint:</em> <code>/mine</code><br>
-                This will mine a new block and add all pending transactions to the blockchain.
-            </p>
-            <p><strong>2. Create a New Transaction</strong><br>
-                <em>Endpoint:</em> <code>/transactions/new</code><br>
-                <em>Required JSON:</em>
-                <pre>
+            <ul>
+                <li>
+                    <strong>/mine</strong> - <em>POST</em> 
+                    <br> Mines a new block with pending transactions.
+                    <br> No additional JSON data required.
+                </li>
+                <li>
+                    <strong>/transactions/new</strong> - <em>POST</em>
+                    <br> Creates a new transaction.
+                    <pre>
 {
     "sender": "address_from",
     "recipient": "address_to",
     "amount": 100,
     "transaction_type": "transfer"
 }
-                </pre>
-                This will create a new transaction. Specify the sender, recipient, amount, and transaction type (e.g., "transfer").
-            </p>
-            <p><strong>3. Check Balance</strong><br>
-                <em>Endpoint:</em> <code>/balance/&lt;address&gt;</code><br>
-                This will return the balance of the specified address.
-            </p>
-            <p><strong>4. Burn Tokens</strong><br>
-                <em>Endpoint:</em> <code>/burn</code><br>
-                <em>Required JSON:</em>
-                <pre>
+                    </pre>
+                </li>
+                <li>
+                    <strong>/balance/[address]</strong> - <em>GET</em>
+                    <br> Checks the balance of a specified wallet address.
+                    <br> Replace `[address]` with the wallet address in the URL.
+                </li>
+                <li>
+                    <strong>/burn</strong> - <em>POST</em>
+                    <br> Burns tokens from an address.
+                    <pre>
 {
-    "sender": "address_from",
+    "sender": "address_to_burn_from",
+    "amount": 50
+}
+                    </pre>
+                </li>
+                <li>
+                    <strong>/mint</strong> - <em>POST</em>
+                    <br> Mints new tokens to a specified address.
+                    <pre>
+{
+    "recipient": "address_to_mint_to",
     "amount": 100
 }
-                </pre>
-                This will burn a specified amount of tokens from the sender's balance.
-            </p>
-            <p><strong>5. Mint New Tokens</strong><br>
-                <em>Endpoint:</em> <code>/mint</code><br>
-                <em>Required JSON:</em>
-                <pre>
-{
-    "recipient": "address_to",
-    "amount": 100
-}
-                </pre>
-                This will mint new tokens and send them to the specified recipient.
-            </p>
+                    </pre>
+                </li>
+            </ul>
+        </div>
+
+        <!-- Block Explorer Section -->
+        <div class="block-explorer">
+            <h2>Block Explorer</h2>
+            <div class="block-nav">
+                <button id="prev_block_btn">Previous Block</button>
+                <button id="next_block_btn">Next Block</button>
+                <button id="latest_block_btn">Latest Block</button>
+            </div>
+            <div id="block_transactions">
+                <h3>Transactions in Block <span id="current_block_index">Loading...</span></h3>
+                <div id="transactions_list">
+                    <!-- Transactions will be dynamically loaded here -->
+                </div>
+            </div>
         </div>
     </div>
 
@@ -90,8 +107,51 @@
                 });
             });
 
-            // Initial fetch for blockchain info
+            // Block Explorer Navigation
+            let currentBlockIndex = 0;
+
+            function loadBlockTransactions(blockIndex) {
+                $.get(`/block/${blockIndex}`, function(data) {
+                    $('#current_block_index').text(blockIndex);
+                    $('#transactions_list').empty();
+
+                    data.transactions.forEach(function(tx, index) {
+                        $('#transactions_list').append(`
+                            <div class="transaction">
+                                <p><strong>Transaction ${index + 1}</strong></p>
+                                <p><strong>Sender:</strong> ${tx.sender}</p>
+                                <p><strong>Recipient:</strong> ${tx.recipient}</p>
+                                <p><strong>Amount:</strong> ${tx.amount}</p>
+                                <p><strong>Type:</strong> ${tx.transaction_type}</p>
+                                <hr>
+                            </div>
+                        `);
+                    });
+                });
+            }
+
+            $('#prev_block_btn').click(function() {
+                if (currentBlockIndex > 0) {
+                    currentBlockIndex--;
+                    loadBlockTransactions(currentBlockIndex);
+                }
+            });
+
+            $('#next_block_btn').click(function() {
+                currentBlockIndex++;
+                loadBlockTransactions(currentBlockIndex);
+            });
+
+            $('#latest_block_btn').click(function() {
+                $.get('/block_info', function(data) {
+                    currentBlockIndex = data.block_index;
+                    loadBlockTransactions(currentBlockIndex);
+                });
+            });
+
+            // Initial fetch for blockchain info and the latest block
             updateBlockchainInfo();
+            $('#latest_block_btn').click();
             
             // Optionally, set an interval to update info (every 5 seconds)
             setInterval(updateBlockchainInfo, 5000);
